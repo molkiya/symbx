@@ -115,7 +115,7 @@ class ProgramEnv:
             prev_err = new_err
 
         mse = torch.mean((cur - target) ** 2)
-        exact_bonus = -0.1 if torch.allclose(cur, target, atol=1e-6) else 0.0
+        exact_bonus = 0.1 if torch.allclose(cur, target, atol=1e-6) else 0.0  # бонус за точное совпадение
         reward = (total_reward - mse + exact_bonus).detach()
 
         return cur.detach(), actions, logprobs, names, reward, mse.item(), entropies

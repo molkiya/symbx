@@ -2,8 +2,9 @@ from typing import List, Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
+import psycopg2.extras
 
-from symbx_db import ReplicaXDB
+from symbx_db import SymbXDB
 from symbx_rules import canonical_form
 
 class Settings(BaseSettings):
@@ -15,7 +16,7 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-db = ReplicaXDB(
+db = SymbXDB(
     pg_dsn=settings.PG_DSN,
     s3_endpoint=settings.S3_ENDPOINT,
     s3_access_key=settings.S3_ACCESS_KEY,
@@ -92,13 +93,18 @@ def execute(req: ExecReq):
 @app.get("/program/{phash}", response_model=ProgramUpsertResp)
 def get_program(phash: str):
     # lightweight fetch via canonical form from DB
-    with db.conn.cursor() as cur:
+    with db.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
         cur.execute("SELECT program_id, canonical_form, length, complexity FROM program WHERE prog_hash=%s", (phash,))
         row = cur.fetchone()
         if not row:
             raise HTTPException(404, "program not found")
-        pid, canon, length, complexity = row
-        return ProgramUpsertResp(program_id=pid, prog_hash=phash, canonical_form=canon, length=length, complexity=complexity)
+        return ProgramUpsertResp(
+            program_id=row["program_id"],
+            prog_hash=phash,
+            canonical_form=row["canonical_form"],
+            length=row["length"],
+            complexity=row["complexity"]
+        )
 
 @app.post("/episodes", response_model=EpisodeResp)
 def log_episode(req: EpisodeReq):

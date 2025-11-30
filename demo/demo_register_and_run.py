@@ -1,9 +1,9 @@
 # demo_register_and_run.py
-from symbx_db import ReplicaXDB
+from symbx_db import SymbXDB
 from symbx_rules import canonical_form
 
 if __name__ == "__main__":
-    db = ReplicaXDB()  # uses local defaults
+    db = SymbXDB()  # uses local defaults
 
     # 1) ensure rules exist
     db.bootstrap_rules()

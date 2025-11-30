@@ -112,7 +112,7 @@ class SymbXDB:
 
         t0 = time.time()
         x_pred = execute_program(a_value, prog_names)
-        mse = (x_pred - x_pred) ** 2  # placeholder if no target; store 0
+        mse = 0.0  # placeholder if no target; store 0
         runtime_ms = int((time.time() - t0) * 1000)
 
         with self.conn.cursor() as cur:
